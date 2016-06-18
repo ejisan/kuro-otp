@@ -94,7 +94,6 @@ if(totp.validate([pinCode], secret)) {
 ```
 
 ## Usage of HOTP
-You need to prepare an OTP secret key (`OTPSecretKey`) for user by [the same way as TOTP](#secret).
 #### PIN Code Generation
 Generate PIN code as toke with counter `1`:
 ```scala
@@ -153,8 +152,5 @@ if(hotp.validate([pinCode], secret, counter)) {
 
 ```
 
-
-
 ## License
 scalauth-otp is licensed under the [Apache License, Version 2.0](./LICENSE).
-
