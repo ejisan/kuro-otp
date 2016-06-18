@@ -39,7 +39,7 @@ class TOTP private (val algorithm: OTPHashAlgorithm, val digits: Int, val period
     * @return a sequence of pin code digits
     */
   def apply(secret: OTPSecretKey, window: Int): Seq[String]
-    = (-window until window).map(w => HOTP(algorithm, digits, secret, TOTP.time(period + w)))
+    = (-window to window).map(w => HOTP(algorithm, digits, secret, TOTP.time(period) + w))
 
   /** Validates a given OTP pin code with a given user's secret.
     *
