@@ -2,13 +2,11 @@ name := """scalauth-otp"""
 
 organization := "com.ejisan"
 
-version := "1.0.0-SNAPSHOT"
+version := "1.0.0"
 
 scalaVersion := "2.11.8"
 
-scalacOptions ++= Seq("-feature")
-
-scalacOptions in Test ++= Seq("-Yrangepos")
+scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked")
 
 crossScalaVersions := Seq("2.10.6", scalaVersion.value)
 
