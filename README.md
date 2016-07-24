@@ -1,7 +1,7 @@
 # OTP(One time password) Authentication Library
-This is one time password authentication library for Scala. It has implementation of TOTP ([RFC6238](https://tools.ietf.org/html/rfc6238)) and HOTP ([RFC4226](https://tools.ietf.org/html/rfc4226)), supports to generate pin code as a token and validates the pin by user's secret.
+This is the one time password authentication library for Scala. It has the implementation of TOTP ([RFC6238](https://tools.ietf.org/html/rfc6238)) and HOTP ([RFC4226](https://tools.ietf.org/html/rfc4226)), supports to generate pin code as a token and validates the pin by the user's secret.
 
-**If you find any differences from RFC specifications, wierd behaviour, bugs or security vulnerability please report or issue me :) asnd I'm always welcome your pull request for implements!**
+**If you find any differences from RFC specifications, weird behavior, bugs or security vulnerability please report or issue me :) I always welcome your pull requests for implementation!**
 
 ## Secret Key and Hashing Algorithms
 #### Secret Key
@@ -13,7 +13,7 @@ val secretFromHex = OTPSecretKey.fromHex("44360b53fc2cc239d74a")
 val secretFromBase32 = OTPSecretKey.fromBase32("IQ3AWU74FTBDTV2K")
 val secretFromBigInt = OTPSecretKey(BigInt("322117861288342841841482"))
 ```
-`OTPSecretKey()` generates secret key with a random generator that is "NativePRNGNonBlocking" as default. You can specify a random generator by giving `scala.util.Random`:
+`OTPSecretKey()` generates a secret key with a random generator that is "NativePRNGNonBlocking" as default. You can specify a random generator by giving `scala.util.Random`:
 ```scala
 import ejisan.scalauth.otp.OTPSecretKey
 import scala.util.Random
