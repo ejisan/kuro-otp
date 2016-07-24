@@ -11,8 +11,8 @@ private[otp] object OTPHasher {
     * @param secret the secret for the hashing
     * @param message the message that will be hashed
     */
-  def apply(algorithm: OTPHashAlgorithm, secret: OTPSecretKey, message: Array[Byte]): Array[Byte] = {
-    val hmac: Mac = Mac.getInstance(algorithm.value)
+  def apply(algorithm: OTPHashAlgorithm.Value, secret: OTPSecretKey, message: Array[Byte]): Array[Byte] = {
+    val hmac: Mac = Mac.getInstance(algorithm.toString)
     hmac.init(new SecretKeySpec(byteArray(secret), "RAW"))
     hmac.doFinal(message)
   }

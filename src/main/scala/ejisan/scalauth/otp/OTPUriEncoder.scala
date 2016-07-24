@@ -4,18 +4,12 @@ import java.net.URI
 
 /** OTP URI encoder */
 object OTPUriEncoder {
-  /** Supported algorithms */
-  private val algorithms: Set[(OTPHashAlgorithm, String)] = Set(
-    OTPHashAlgorithm.SHA1 -> "SHA1",
-    OTPHashAlgorithm.SHA256 -> "SHA256",
-    OTPHashAlgorithm.SHA512 -> "SHA512")
-
-  private def formalizeHashAlgorithm(algorithm: OTPHashAlgorithm): String
-    = algorithms.find(_._1 == algorithm).map(_._2).getOrElse(throw new UnsupportedOTPHashAlgorithmException(algorithm.toString))
+  private def formalizeHashAlgorithm(algorithm: OTPHashAlgorithm.Value): String
+    = OTPHashAlgorithm.values.find(_.toString == algorithm).map(_.toString).getOrElse(throw new UnsupportedOTPHashAlgorithmException(algorithm.toString))
 
   private def buildQuery(
     secret: OTPSecretKey,
-    algorithm: OTPHashAlgorithm,
+    algorithm: OTPHashAlgorithm.Value,
     digits: Int,
     issuer: String,
     additional: (String, Any)*): String

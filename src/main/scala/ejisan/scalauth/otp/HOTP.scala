@@ -21,7 +21,7 @@ package ejisan.scalauth.otp
   * @param algorithm the name of selected hashing algorithm
   * @param digits the length of returning OTP pin code string
   */
-class HOTP private (val algorithm: OTPHashAlgorithm, val digits: Int) {
+class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
   /** Generates OTP pin code with a given user's secret and a counter.
     *
     * @param secret the user's secret
@@ -78,7 +78,7 @@ object HOTP {
     *
     * @return pin code digits
     */
-  def apply(algorithm: OTPHashAlgorithm, digits: Int, secret: OTPSecretKey, counter: Long): String = {
+  def apply(algorithm: OTPHashAlgorithm.Value, digits: Int, secret: OTPSecretKey, counter: Long): String = {
     val msg = BigInt(counter).toByteArray.reverse.padTo(8, 0.toByte).reverse
     val hash = OTPHasher(algorithm, secret, msg)
     val offset = hash(hash.length - 1) & 0xf
@@ -95,7 +95,7 @@ object HOTP {
     * @param algorithm the name of selected hashing algorithm
     * @param digits the length of returning OTP pin code string
     */
-  def apply(algorithm: OTPHashAlgorithm, digits: Int): HOTP = {
+  def apply(algorithm: OTPHashAlgorithm.Value, digits: Int): HOTP = {
     // Requirements
     require(digits > 0, s"digits must be greater than 0, but it is ($digits)")
     new HOTP(algorithm, digits)

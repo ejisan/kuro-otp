@@ -21,7 +21,7 @@ package ejisan.scalauth.otp
   * @param digits the length of returning OTP pin code string
   * @param period the period of seconds
   */
-class TOTP private (val algorithm: OTPHashAlgorithm, val digits: Int, val period: Int) {
+class TOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int, val period: Int) {
   /** Generates OTP pin code with a given user's secret.
     *
     * @param secret the user's secret
@@ -69,7 +69,7 @@ object TOTP {
     * @param digits the length of returning OTP pin code string
     * @param period the period of seconds
     */
-  def apply(algorithm: OTPHashAlgorithm, digits: Int, period: Int): TOTP = {
+  def apply(algorithm: OTPHashAlgorithm.Value, digits: Int, period: Int): TOTP = {
     // Requirements
     require(digits > 0, s"digits must be greater than 0, but it is ($digits)")
     require(period > 0, s"period must be greater than 0, but it is ($period)")

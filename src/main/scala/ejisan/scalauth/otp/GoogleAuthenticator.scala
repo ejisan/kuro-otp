@@ -21,7 +21,7 @@ object GoogleAuthenticator {
     * @param algorithm the name of selected hashing algorithm
     * @param digits the length of returning OTP pin code string
     */
-  def hotp(algorithm: OTPHashAlgorithm = OTPHashAlgorithm.SHA1, digits: Int = 6): HOTP = {
+  def hotp(algorithm: OTPHashAlgorithm.Value = OTPHashAlgorithm.SHA1, digits: Int = 6): HOTP = {
     require(digits >= 6, s"`digits` must be greater than or equal to 6, but it is '$digits'.")
     HOTP(algorithm, digits)
   }
@@ -37,7 +37,7 @@ object GoogleAuthenticator {
     * @param digits the length of returning OTP pin code string
     * @param period the period of seconds
     */
-  def totp(algorithm: OTPHashAlgorithm = OTPHashAlgorithm.SHA1, digits: Int = 6, period: Int = 30): TOTP = {
+  def totp(algorithm: OTPHashAlgorithm.Value = OTPHashAlgorithm.SHA1, digits: Int = 6, period: Int = 30): TOTP = {
     require(digits >= 6, s"`digits` must be greater than or equal to 6, but it is '$digits'.")
     require(period >= 5, s"`period` must be greater than or equal to 5, but it is '$period'.")
     TOTP(algorithm, digits, period)
