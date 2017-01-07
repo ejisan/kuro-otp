@@ -1,5 +1,5 @@
 pomExtra in Global := {
-  <url>https://github.com/ejisan/scalauth-otp</url>
+  <url>https://github.com/ejisan/scalauthx-otp</url>
   <licenses>
     <license>
       <name>Apache-2.0</name>
@@ -7,9 +7,9 @@ pomExtra in Global := {
     </license>
   </licenses>
   <scm>
-    <connection>scm:git@github.com:ejisan/scalauth-otp.git</connection>
-    <developerConnection>scm:git@github.com:ejisan/scalauth-otp.git</developerConnection>
-    <url>https://github.com/ejisan/scalauth-otp</url>
+    <connection>scm:git@github.com:ejisan/scalauthx-otp.git</connection>
+    <developerConnection>scm:git@github.com:ejisan/scalauthx-otp.git</developerConnection>
+    <url>https://github.com/ejisan/scalauthx-otp</url>
   </scm>
   <developers>
     <developer>

@@ -1,4 +1,4 @@
-package ejisan.scalauth.otp
+package ejisan.scalauthx.otp
 
 import scala.math.BigInt
 
@@ -10,26 +10,30 @@ import scala.math.BigInt
 final class OTPSecretKey private (val value: BigInt) extends AnyVal {
   /** Converts this secret key to hex encoded string representation */
   def toHex: String = toString(16)
+
   /** Converts this secret key to base32 encoded string representation */
   def toBase32: String = Base32.encode(value)
+
   def toString(n: Int): String = value.toString(n)
+
   override def toString: String = s"OTPSecretKey($toBase32)"
 }
 
-/** Factory for [[ejisan.scalauth.otp.OTPSecretKey]] instances. */
+/** Factory for [[ejisan.scalauthx.otp.OTPSecretKey]] instances. */
 object OTPSecretKey {
   import scala.util.Random
 
   /** Creates a secret with a random value. */
-  def apply(): OTPSecretKey
-    = apply(new Random(java.security.SecureRandom.getInstance("NativePRNGNonBlocking")))
+  def apply(): OTPSecretKey =
+    apply(new Random(java.security.SecureRandom.getInstance("NativePRNGNonBlocking")))
 
   /** Creates a secret with a pseudo random number generator.
     *
     * @param prng the pseudo random number generator
     */
-  def apply(prng: Random): OTPSecretKey
-    = new OTPSecretKey((2 to 16).foldLeft(BigInt(prng.nextInt(31)) + 1: BigInt)((a, b) => a * 32 + prng.nextInt(32)))
+  def apply(prng: Random): OTPSecretKey =
+    new OTPSecretKey(
+      (2 to 16).foldLeft(BigInt(prng.nextInt(31)) + 1: BigInt)((a, b) => a * 32 + prng.nextInt(32)))
 
   /** Creates a secret with a value as bytes.
     *

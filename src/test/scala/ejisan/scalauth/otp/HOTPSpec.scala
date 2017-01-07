@@ -1,9 +1,6 @@
-package ejisan.test.scalauth.otp
+package ejisan.scalauthx.otp
 
-import org.specs2.mutable.Specification
-import ejisan.scalauth.otp.{ HOTP, OTPSecretKey, OTPHashAlgorithm }
-
-class HOTPSpec extends Specification {
+class HOTPSpec extends org.specs2.mutable.Specification {
 
   val digits = 6
   val counter = 1
@@ -13,10 +10,10 @@ class HOTPSpec extends Specification {
   val hotp = HOTP(OTPHashAlgorithm.SHA1, digits)
 
   "HOTP" should {
-    "generates same code with same parameter" in {
+    "generate same code with same parameter" in {
       hotp(secret, counter) must beEqualTo (hotp(secret, counter))
     }
-    s"generates $window codes with $window windows" in {
+    s"generate $window codes with $window windows" in {
       hotp(secret, counter, window).length must beEqualTo (window)
       hotp(secret, counter, window).head._2 must beEqualTo (hotp(secret, counter))
     }

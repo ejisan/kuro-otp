@@ -1,7 +1,4 @@
-package ejisan.scalauth.otp
-
-import javax.crypto.spec.SecretKeySpec
-import javax.crypto.Mac
+package ejisan.scalauthx.otp
 
 /** Hashing helpers. */
 private[otp] object OTPHasher {
@@ -11,9 +8,12 @@ private[otp] object OTPHasher {
     * @param secret the secret for the hashing
     * @param message the message that will be hashed
     */
-  def apply(algorithm: OTPHashAlgorithm.Value, secret: OTPSecretKey, message: Array[Byte]): Array[Byte] = {
-    val hmac: Mac = Mac.getInstance(algorithm.toString)
-    hmac.init(new SecretKeySpec(byteArray(secret), "RAW"))
+  def apply(
+      algorithm: OTPHashAlgorithm.Value,
+      secret: OTPSecretKey,
+      message: Array[Byte]): Array[Byte] = {
+    val hmac = javax.crypto.Mac.getInstance(algorithm.toString)
+    hmac.init(new javax.crypto.spec.SecretKeySpec(byteArray(secret), "RAW"))
     hmac.doFinal(message)
   }
 

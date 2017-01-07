@@ -7,7 +7,7 @@ This is the one time password authentication library for Scala. It has the imple
 #### Secret Key
 Prepare an OTP secret key (`OTPSecretKey`) for the user:
 ```scala
-import ejisan.scalauth.otp.OTPSecretKey
+import ejisan.scalauthx.otp.OTPSecretKey
 val secret = OTPSecretKey()
 val secretFromHex = OTPSecretKey.fromHex("44360b53fc2cc239d74a")
 val secretFromBase32 = OTPSecretKey.fromBase32("IQ3AWU74FTBDTV2K")
@@ -15,14 +15,14 @@ val secretFromBigInt = OTPSecretKey(BigInt("322117861288342841841482"))
 ```
 `OTPSecretKey()` generates a secret key with a random generator that is "NativePRNGNonBlocking" as default. You can specify a random generator by giving `scala.util.Random`:
 ```scala
-import ejisan.scalauth.otp.OTPSecretKey
+import ejisan.scalauthx.otp.OTPSecretKey
 import scala.util.Random
 val secret = OTPSecretKey(new Random(java.security.SecureRandom.getInstance("NativePRNGBlocking")))
 ```
 Encoding to Base63 or Hex string representation:
 
 ```scala
-import ejisan.scalauth.otp.OTPSecretKey
+import ejisan.scalauthx.otp.OTPSecretKey
 val secret = OTPSecretKey()
 secret.toBase32
 secret.toHex
@@ -30,7 +30,7 @@ secret.toHex
 #### Hashing Algorithms
 Create a TOTP instance with an algorithm, a length of PIN code digits and period of seconds. It supports .
 ```scala
-import ejisan.scalauth.otp.{ OTPHashAlgorithm, TOTP }
+import ejisan.scalauthx.otp.{ OTPHashAlgorithm, TOTP }
 val totp = TOTP(OTPHashAlgorithm.SHA1, 6, 30)
 ```
 Supported algorithms (Old versioned Google Authenticator ignores this algorithm):
@@ -42,7 +42,7 @@ Supported algorithms (Old versioned Google Authenticator ignores this algorithm)
 #### PIN Code Generation
 Generate PIN code as toke:
 ```scala
-import ejisan.scalauth.otp.{ OTPSecretKey, OTPHashAlgorithm, TOTP }
+import ejisan.scalauthx.otp.{ OTPSecretKey, OTPHashAlgorithm, TOTP }
 val totp = TOTP(OTPHashAlgorithm.SHA1, 6, 30)
 val secret = OTPSecretKey()
 
@@ -64,7 +64,7 @@ totp([pinCode], secret) // Returns boolean
 ### Cheat Sheet
 Generate secret key.
 ```scala
-import ejisan.scalauth.otp.OTPSecretKey
+import ejisan.scalauthx.otp.OTPSecretKey
 
 val secret = OTPSecretKey()
 secret.toBase32
@@ -72,7 +72,7 @@ secret.toBase32
 Generate PIN code:
 
 ```scala
-import ejisan.scalauth.otp.{ OTPSecretKey, OTPHashAlgorithm, TOTP }
+import ejisan.scalauthx.otp.{ OTPSecretKey, OTPHashAlgorithm, TOTP }
 
 val secret = OTPSecretKey.fromBase32("FVKZGY3GSHGB6LZN")
 val totp = TOTP(OTPHashAlgorithm.SHA1, 6, 30)
@@ -97,7 +97,7 @@ if(totp.validate([pinCode], secret)) {
 #### PIN Code Generation
 Generate PIN code as toke with counter `1`:
 ```scala
-import ejisan.scalauth.otp.{ OTPHashAlgorithm, HOTP }
+import ejisan.scalauthx.otp.{ OTPHashAlgorithm, HOTP }
 val hotp = HOTP(OTPHashAlgorithm.SHA1, 6)
 val secret = OTPSecretKey()
 val counter = 1
@@ -121,7 +121,7 @@ hotp([pinCode], secret, counter, windowSize) // Returns boolean
 ### Cheat Sheet
 Generate secret key.
 ```scala
-import ejisan.scalauth.otp.OTPSecretKey
+import ejisan.scalauthx.otp.OTPSecretKey
 
 val secret = OTPSecretKey()
 secret.toBase32
@@ -129,7 +129,7 @@ secret.toBase32
 Generate PIN code:
 
 ```scala
-import ejisan.scalauth.otp.{ OTPSecretKey, OTPHashAlgorithm, HOTP }
+import ejisan.scalauthx.otp.{ OTPSecretKey, OTPHashAlgorithm, HOTP }
 
 val secret = OTPSecretKey.fromBase32("FVKZGY3GSHGB6LZN")
 val hotp = HOTP(OTPHashAlgorithm.SHA1, 6)
@@ -153,4 +153,4 @@ if(hotp.validate([pinCode], secret, counter)) {
 ```
 
 ## License
-scalauth-otp is licensed under the [Apache License, Version 2.0](./LICENSE).
+scalauthx-otp is licensed under the [Apache License, Version 2.0](./LICENSE).

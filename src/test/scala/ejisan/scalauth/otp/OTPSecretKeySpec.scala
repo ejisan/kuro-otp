@@ -1,14 +1,11 @@
-package ejisan.test.scalauth.otp
+package ejisan.scalauthx.otp
 
-import org.specs2.mutable.Specification
-import ejisan.scalauth.otp.OTPSecretKey
-
-class OTPSecretKeySpec extends Specification {
+class OTPSecretKeySpec extends org.specs2.mutable.Specification {
 
   val secret = OTPSecretKey()
 
   "OTPSecretKey" should {
-    "generates random secret" in {
+    "generate random secret" in {
       secret must not equalTo OTPSecretKey()
     }
 

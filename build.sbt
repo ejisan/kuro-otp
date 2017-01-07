@@ -1,4 +1,4 @@
-name := """scalauth-otp"""
+name := """scalauthx-otp"""
 
 organization := "com.ejisan"
 

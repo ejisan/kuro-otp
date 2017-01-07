@@ -1,4 +1,4 @@
-package ejisan.scalauth.otp
+package ejisan.scalauthx.otp
 
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Mac
@@ -10,4 +10,5 @@ object OTPHashAlgorithm extends Enumeration {
   val SHA512 = Value("HmacSha512")
 }
 
-class UnsupportedOTPHashAlgorithmException(message: String) extends Exception(message: String)
+class UnsupportedOTPHashAlgorithmException(message: String)
+  extends Exception(message: String)

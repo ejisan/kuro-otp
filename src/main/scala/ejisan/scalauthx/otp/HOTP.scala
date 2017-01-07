@@ -1,9 +1,9 @@
-package ejisan.scalauth.otp
+package ejisan.scalauthx.otp
 
 /** A HOTP(HMAC-based One-time Password Algorithm).
   *
   * {{{
-  * import ejisan.scalauth.otp._
+  * import ejisan.scalauthx.otp._
   *
   * val secret: OTPSecretKey = OTPSecretKey()
   * val hotp: HOTP = HOTP(OTPHashAlgorithm.SHA1)
@@ -29,8 +29,8 @@ class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
     *
     * @return pin code digits
     */
-  def apply(secret: OTPSecretKey, counter: Long): String
-    = HOTP(algorithm, digits, secret, counter)
+  def apply(secret: OTPSecretKey, counter: Long): String =
+    HOTP(algorithm, digits, secret, counter)
 
   /** Generates OTP pin codes with a given user's secret, a counter and a window size.
     *
@@ -40,8 +40,8 @@ class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
     *
     * @return a sequence of tuple typed (Long, String) as (counter, pin code digits)
     */
-  def apply(secret: OTPSecretKey, counter: Long, window: Int): Seq[(Long, String)]
-    = (counter until counter + window).map(c => (c, HOTP(algorithm, digits, secret, c)))
+  def apply(secret: OTPSecretKey, counter: Long, window: Int): Seq[(Long, String)] =
+    (counter until counter + window).map(c => (c, HOTP(algorithm, digits, secret, c)))
 
   /** Validates a given OTP pin code with a given user's secret and a counter.
     *
@@ -49,8 +49,8 @@ class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
     * @param secret the user's secret
     * @param counter the counter number
     */
-  def validate(pin: String, secret: OTPSecretKey, counter: Long): Boolean
-    = pin == apply(secret, counter)
+  def validate(pin: String, secret: OTPSecretKey, counter: Long): Boolean =
+    pin == apply(secret, counter)
 
   /** Validates a given OTP pin code with a given user's secret, a counter and a window size.
     *
@@ -61,11 +61,11 @@ class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
     *
     * @return an optional matched counter number
     */
-  def validate(pin: String, secret: OTPSecretKey, counter: Long, window: Int): Option[Long]
-    = apply(secret, counter, window).find(_._2 == pin).map(_._1)
+  def validate(pin: String, secret: OTPSecretKey, counter: Long, window: Int): Option[Long] =
+    apply(secret, counter, window).find(_._2 == pin).map(_._1)
 }
 
-/** Factory for [[ejisan.scalauth.otp.HOTP]] instances
+/** Factory for [[ejisan.scalauthx.otp.HOTP]] instances
   * and an implementation of HOTP pin code generation.
   **/
 object HOTP {
@@ -78,7 +78,11 @@ object HOTP {
     *
     * @return pin code digits
     */
-  def apply(algorithm: OTPHashAlgorithm.Value, digits: Int, secret: OTPSecretKey, counter: Long): String = {
+  def apply(
+      algorithm: OTPHashAlgorithm.Value,
+      digits: Int,
+      secret: OTPSecretKey,
+      counter: Long): String = {
     val msg = BigInt(counter).toByteArray.reverse.padTo(8, 0.toByte).reverse
     val hash = OTPHasher(algorithm, secret, msg)
     val offset = hash(hash.length - 1) & 0xf
@@ -96,7 +100,6 @@ object HOTP {
     * @param digits the length of returning OTP pin code string
     */
   def apply(algorithm: OTPHashAlgorithm.Value, digits: Int): HOTP = {
-    // Requirements
     require(digits > 0, s"digits must be greater than 0, but it is ($digits)")
     new HOTP(algorithm, digits)
   }
