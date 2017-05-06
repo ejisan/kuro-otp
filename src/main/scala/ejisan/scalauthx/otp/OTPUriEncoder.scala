@@ -6,8 +6,8 @@ import java.net.URI
 object OTPUriEncoder {
   private def formalizeHashAlgorithm(algorithm: OTPHashAlgorithm.Value): String =
     OTPHashAlgorithm.values
-      .find(_.toString == algorithm)
-      .map(_.toString)
+      .find(_ == algorithm)
+      .map(_.toString.toUpperCase.replace("HMAC", ""))
       .getOrElse(throw new UnsupportedOTPHashAlgorithmException(algorithm.toString))
 
   private def buildQuery(
