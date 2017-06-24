@@ -1,106 +1,205 @@
-package ejisan.scalauthx.otp
+package ejisan.kuro.otp
 
-/** A HOTP(HMAC-based One-time Password Algorithm).
-  *
-  * {{{
-  * import ejisan.scalauthx.otp._
-  *
-  * val secret: OTPSecretKey = OTPSecretKey()
-  * val hotp: HOTP = HOTP(OTPHashAlgorithm.SHA1)
-  * val counter: Int = 1
-  *
-  * // Pin code generation
-  * hotp(secret, counter) // : String
-  * hotp(secret, counter, 5) // : Seq[String]
-  *
-  * // Pin code validation
-  * hotp.validate(pin, secret, counter) // : Boolean
-  * hotp.validate(pin, secret, counter, 5) // : Boolean (Look-ahead 5 more count)
-  * }}}
-  *
-  * @param algorithm the name of selected hashing algorithm
-  * @param digits the length of returning OTP pin code string
-  */
-class HOTP private (val algorithm: OTPHashAlgorithm.Value, val digits: Int) {
-  /** Generates OTP pin code with a given user's secret and a counter.
-    *
-    * @param secret the user's secret
-    * @param counter the counter number
-    *
-    * @return pin code digits
-    */
-  def apply(secret: OTPSecretKey, counter: Long): String =
-    HOTP(algorithm, digits, secret, counter)
+import java.net.URI
+import scala.collection.JavaConverters._
+import scala.compat.java8.OptionConverters._
 
-  /** Generates OTP pin codes with a given user's secret, a counter and a window size.
-    *
-    * @param secret the user's secret
-    * @param counter the counter number
-    * @param window the look-ahead window size
-    *
-    * @return a sequence of tuple typed (Long, String) as (counter, pin code digits)
-    */
-  def apply(secret: OTPSecretKey, counter: Long, window: Int): Seq[(Long, String)] =
-    (counter until counter + window).map(c => (c, HOTP(algorithm, digits, secret, c)))
+/**
+ * A HOTP Authenticator Implementation.
+ *
+ * @see [[https://tools.ietf.org/html/rfc4226 RFC 4226]]
+ * @see [[HOTP$ HOTP Factory]]
+ *
+ * @param algorithm the hash function used to calculate the HMAC.
+ * @param digits the number of digits to truncate.
+ * @param otpkey the shared secret key as [[OTPKey]] instance.
+ */
+class HOTP(
+    val algorithm: OTPAlgorithm,
+    val digits: Int,
+    val otpkey: OTPKey) extends HOTPSupport {
 
-  /** Validates a given OTP pin code with a given user's secret and a counter.
-    *
-    * @param pin the pin code that user generated
-    * @param secret the user's secret
-    * @param counter the counter number
-    */
-  def validate(pin: String, secret: OTPSecretKey, counter: Long): Boolean =
-    pin == apply(secret, counter)
+  /**
+   * Generates a HOTP code for the given counter.
+   *
+   * @see [[https://tools.ietf.org/html/rfc4226#section-5.3 Generating an HOTP Value]]
+   *
+   * @param counter the moving factor.
+   * @return A numeric String HOTP code in base 10.
+   */
+  def generate(counter: Long): String =
+    intToDigits(generateForCounter(algorithm, digits, otpkey, counter), digits)
 
-  /** Validates a given OTP pin code with a given user's secret, a counter and a window size.
-    *
-    * @param pin the pin code that user generated
-    * @param secret the user's secret
-    * @param counter the counter number
-    * @param window the look-ahead window size
-    *
-    * @return an optional matched counter number
-    */
-  def validate(pin: String, secret: OTPSecretKey, counter: Long, window: Int): Option[Long] =
-    apply(secret, counter, window).find(_._2 == pin).map(_._1)
-}
-
-/** Factory for [[ejisan.scalauthx.otp.HOTP]] instances
-  * and an implementation of HOTP pin code generation.
-  **/
-object HOTP {
-  /** An implementation of HOTP pin code generation.
-    *
-    * @param algorithm the name of selected hashing algorithm
-    * @param digits the length of returning OTP pin code string
-    * @param secret the user's secret
-    * @param counter the counter number
-    *
-    * @return pin code digits
-    */
-  def apply(
-      algorithm: OTPHashAlgorithm.Value,
-      digits: Int,
-      secret: OTPSecretKey,
-      counter: Long): String = {
-    val msg = BigInt(counter).toByteArray.reverse.padTo(8, 0.toByte).reverse
-    val hash = OTPHasher(algorithm, secret, msg)
-    val offset = hash(hash.length - 1) & 0xf
-    val binary = ((hash(offset) & 0x7f) << 24) |
-      ((hash(offset + 1) & 0xff) << 16) |
-      ((hash(offset + 2) & 0xff) << 8 |
-       (hash(offset + 3) & 0xff))
-    val otp = binary % (scala.math.pow(10, digits)).toLong
-    ("0" * digits + otp.toString).takeRight(digits)
+  /**
+   * Generates HOTP codes for the given counter.
+   *
+   * @see [[https://tools.ietf.org/html/rfc4226#section-5.3 Generating an HOTP Value]]
+   *
+   * @param counter the moving factor.
+   * @param lookAheadWindow the number of window to look ahead.
+   * @return A `Map[Long, String]` object that contains counter as a key
+   *         and a numeric String HOTP code in base 10 as a value.
+   */
+  def generate(counter: Long, lookAheadWindow: Int): Map[Long, String] = {
+    generateForCounter(algorithm, digits, otpkey, counter, lookAheadWindow)
+      .mapValues(intToDigits(_, digits))
   }
 
-  /** Creates a HOTP with a given algorithm and digits.
-    *
-    * @param algorithm the name of selected hashing algorithm
-    * @param digits the length of returning OTP pin code string
-    */
-  def apply(algorithm: OTPHashAlgorithm.Value, digits: Int): HOTP = {
-    require(digits > 0, s"digits must be greater than 0, but it is ($digits)")
-    new HOTP(algorithm, digits)
+  /**
+   * Java API: Generates HOTP codes for the given counter.
+   *
+   * @see [[HOTP.generate(counter:Long,lookAheadWindow:Int):Map[Long,String]* HOTP.generate]]
+   */
+  def generateAsJava(
+      counter: Long,
+      lookAheadWindow: Int): java.util.Map[java.lang.Long, String] = {
+    generate(counter, lookAheadWindow)
+      .map({ case (k, v) => (Long.box(k), v) })
+      .asJava
+  }
+
+  /**
+   * Validates the given HOTP code for the given counter.
+   *
+   * @see [[https://tools.ietf.org/html/rfc4226#section-7.2 Validation of HOTP Values]]
+   *
+   * @param counter the moving factor.
+   * @param code the numeric String HOTP code in base 10.
+   * @return `true` if it's valid, `false` otherwise.
+   */
+  def validate(counter: Long, code: String): Boolean =
+    validateWithCounter(algorithm, digits, otpkey, counter, digitsToInt(code))
+
+  /**
+   * Validates the given HOTP code for the given counter.
+   *
+   * @param counter the moving factor.
+   * @param lookAheadWindow the number of window to look ahead.
+   * @param code the numeric String HOTP code in base 10.
+   * @return `Some(gap)` as valid counter and the gap if it's valid, `None` otherwise.
+   */
+  def validate(counter: Long, lookAheadWindow: Int, code: String): Option[Long] =
+    validateWithCounter(algorithm, digits, otpkey, counter, lookAheadWindow, digitsToInt(code))
+
+  /**
+   * Java API: Validates the given HOTP code for the given counter.
+   *
+   * @see [[HOTP.validate(counter:Long,lookAheadWindow:Int,code:String):Option[Long]* HOTP.validate]]
+   */
+  def validateAsJava(
+      counter: Long,
+      lookAheadWindow: Int,
+      code: String): java.util.OptionalLong =
+    validate(counter, lookAheadWindow, code).asPrimitive
+
+  /**
+   * Returns a URI instance with HOTP configurations.
+   *
+   * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
+   *
+   * @param account the account name of the subject.
+   * @param issuer the service provider name.
+   * @param params the additional parameters.
+   */
+  def toURI(
+      account: String,
+      issuer: Option[String] = None,
+      params: Map[String, String] = Map()): URI = {
+    OTPAuthURICodec.encode(
+      protocol,
+      account,
+      otpkey,
+      issuer,
+      params ++ Map("digits" -> digits.toString, "algorithm" -> algorithm.name))
+  }
+
+  /**
+   * Java API: Returns a URI instance with HOTP configurations.
+   *
+   * @see [[HOTP.toURI(account:String,issuer:Option[String],params:Map[String,String]):java\.net\.URI* HOTP.toURI]]
+   */
+  def toURI(
+      account: String,
+      issuer: java.util.Optional[String],
+      params: java.util.Map[String, String]): URI =
+    toURI(account, issuer.asScala, params.asScala.toMap)
+
+  override def toString: String = s"HOTP(${otpkey.toBase32}, ${algorithm.name}, $digits)"
+
+  override def hashCode() = 41 * (41 * otpkey.hashCode + algorithm.hashCode) + digits.hashCode
+
+  override def equals(obj: Any): Boolean = obj match {
+    case o: HOTP => o.otpkey == otpkey && o.algorithm == algorithm && o.digits == digits
+    case _ => false
+  }
+}
+
+/**
+ * Factory for [[HOTP]] instances.
+ *
+ * @see [[https://tools.ietf.org/html/rfc4226 RFC 4226]]
+ *
+ * @example
+ * === Scala ===
+ * {{{
+ *  val hotp = HOTP(OTPAlgorithm.SHA1, 6, OTPKey.random(OTPAlgorithm.SHA1))
+ *  val code1 = hotp.generate(0l)
+ *  if (hotp.validate(0l, code1)) {
+ *    println("You are authenticated!")
+ *  }
+ *  val code2 = hotp.generate(3l)
+ *  hotp.validate(0l, 5, code2) foreach { gap =>
+ *    println(s"You are authenticated! (gap: $gap)")
+ *  }
+ * }}}
+ * === Java ===
+ * {{{
+ *  HOTP hotp = HOTP.getInstance(OTPAlgorithm.getSHA1(), 6, OTPKey.random(OTPAlgorithm.getSHA1()));
+ *  String code1 = hotp.generate(0l);
+ *  if (hotp.validate(0l, code1)) {
+ *    System.out.println("You are authenticated!");
+ *  }
+ *  String code2 = hotp.generate(3l);
+ *  java.util.OptionalLong result = hotp.validateAsJava(0l, 5, code2);
+ *  if (result.isPresent()) {
+ *    System.out.println("You are authenticated! (gap: " + result.getAsLong() + ")");
+ *  }
+ * }}}
+ */
+object HOTP {
+  /**
+   * Creates new [[HOTP]] instance.
+   *
+   * @see [[https://tools.ietf.org/html/rfc4226 RFC 4226]]
+   *
+   * @param algorithm the hash function used to calculate the HMAC.
+   * @param digits the number of digits to truncate.
+   * @param otpkey the shared secret key as [[OTPKey]] instance.
+   */
+  def apply(algorithm: OTPAlgorithm, digits: Int, otpkey: OTPKey): HOTP = {
+    new HOTP(algorithm, digits, otpkey)
+  }
+
+  /**
+   * Java API: Creates new [[HOTP]] instance.
+   */
+  def getInstance(algorithm: OTPAlgorithm, digits: Int, otpkey: OTPKey): HOTP =
+    apply(algorithm, digits, otpkey)
+
+  /**
+   * Creates new [[HOTP]] instance from `otpauth` URI.
+   *
+   * @see [[https://github.com/google/google-authenticator/wiki/Key-Uri-Format Key URI Format]]
+   */
+  def fromURI(uri: URI): HOTP = {
+    import scala.util.control.Exception.allCatch
+    OTPAuthURICodec.decode(uri) match {
+      case Some(decoded) =>
+        apply(
+          decoded.params.get("algorithm").flatMap(OTPAlgorithm.find).getOrElse(OTPAlgorithm.SHA1),
+          decoded.params.get("digits").flatMap(d => allCatch.opt(d.toInt)).getOrElse(6),
+          decoded.otpkey)
+      case None => throw new IllegalArgumentException("Illegal URI given.")
+    }
   }
 }
