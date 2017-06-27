@@ -154,7 +154,7 @@ class TOTP(
   /**
    * Java API: Validates the given TOTP code for the instant of time.
    *
-   * @see [[TOTP.validate(window:Int,code:String):java.util.OptionalLong* TOTP.validate]]
+   * @see [[TOTP.validate(window:Int,code:String):Option[Long]* TOTP.validate]]
    */
   def validateAsJava(window: Int, code: String): java.util.OptionalLong =
     validateAsJava(currentTime(), window, code)
@@ -162,7 +162,7 @@ class TOTP(
   /**
    * Java API: Validates the given TOTP code for the instant of time.
    *
-   * @see [[TOTP.validate(instantTimestamp:Long,window:Int,code:String):java.util.OptionalLong* TOTP.validate]]
+   * @see [[TOTP.validate(instantTimestamp:Long,window:Int,code:String):Option[Long]* TOTP.validate]]
    */
   def validateAsJava(instantTimestamp: Long, window: Int, code: String): java.util.OptionalLong =
     validate(instantTimestamp, window, code).asPrimitive
@@ -240,7 +240,7 @@ class TOTP(
  *  }
  *  val code2 = totp.generate(3l)
  *  totp.validate(5, code2) foreach { gap =>
- *    println(s"You are authenticated! (gap: $gap)")
+ *    println(s"You are authenticated! (gap: " + gap + ")")
  *  }
  * }}}
  * === Java ===
