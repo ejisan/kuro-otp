@@ -63,8 +63,6 @@ class OTPKeySpec extends FlatSpec with Matchers {
   }
 
   "OTPKey#random" should "generate key length of default length" in {
-    val md5Key = OTPKey.random(OTPAlgorithm.MD5)
-    md5Key.keyLength should be (OTPAlgorithm.MD5.defaultKeyLength)
     val sha1Key = OTPKey.random(OTPAlgorithm.SHA1)
     sha1Key.keyLength should be (OTPAlgorithm.SHA1.defaultKeyLength)
     val sha256Key = OTPKey.random(OTPAlgorithm.SHA256)
@@ -74,8 +72,6 @@ class OTPKeySpec extends FlatSpec with Matchers {
   }
 
   "OTPKey#randomStrong" should "generate key length of default strong length" in {
-    val md5Key = OTPKey.randomStrong(OTPAlgorithm.MD5)
-    md5Key.keyLength should be (OTPAlgorithm.MD5.strongKeyLength)
     val sha1Key = OTPKey.randomStrong(OTPAlgorithm.SHA1)
     sha1Key.keyLength should be (OTPAlgorithm.SHA1.strongKeyLength)
     val sha256Key = OTPKey.randomStrong(OTPAlgorithm.SHA256)

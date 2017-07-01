@@ -74,8 +74,6 @@ public class OTPKeyTest {
 
   @Test
   public void testRandom() throws Exception {
-    OTPKey md5Key = OTPKey.random(OTPAlgorithm.getMD5());
-    assertThat(md5Key.keyLength(), is (OTPAlgorithm.getMD5().defaultKeyLength()));
     OTPKey sha1Key = OTPKey.random(OTPAlgorithm.getSHA1());
     assertThat(sha1Key.keyLength(), is (OTPAlgorithm.getSHA1().defaultKeyLength()));
     OTPKey sha256Key = OTPKey.random(OTPAlgorithm.getSHA256());
@@ -86,8 +84,6 @@ public class OTPKeyTest {
 
   @Test
   public void testRandomStrong() throws Exception {
-    OTPKey md5Key = OTPKey.randomStrong(OTPAlgorithm.getMD5());
-    assertThat(md5Key.keyLength(), is (OTPAlgorithm.getMD5().strongKeyLength()));
     OTPKey sha1Key = OTPKey.randomStrong(OTPAlgorithm.getSHA1());
     assertThat(sha1Key.keyLength(), is (OTPAlgorithm.getSHA1().strongKeyLength()));
     OTPKey sha256Key = OTPKey.randomStrong(OTPAlgorithm.getSHA256());

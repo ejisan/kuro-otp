@@ -36,15 +36,9 @@ sealed class OTPAlgorithm(
 object OTPAlgorithm {
   import scala.compat.java8.OptionConverters._
 
-  case object MD5 extends OTPAlgorithm("MD5", "HmacMD5", 160, 160)
   case object SHA1 extends OTPAlgorithm("SHA1", "HmacSHA1", 160, 200)
   case object SHA256 extends OTPAlgorithm("SHA256", "HmacSHA256", 240, 280)
   case object SHA512 extends OTPAlgorithm("SHA512", "HmacSHA512", 480, 520)
-
-  /**
-   * JAVA API: Returns MD5 algorithm.
-   */
-  def getMD5(): OTPAlgorithm = MD5
 
   /**
    * JAVA API: Returns SHA1 algorithm.
@@ -66,7 +60,6 @@ object OTPAlgorithm {
    */
   def find(name: String): Option[OTPAlgorithm] = {
     name match {
-      case "MD5" => Some(MD5)
       case "SHA1" => Some(SHA1)
       case "SHA256" => Some(SHA256)
       case "SHA512" => Some(SHA512)
