@@ -1,5 +1,7 @@
 package ejisan.kuro.otp
 
+import com.typesafe.config.{ Config, ConfigFactory }
+
 /**
  * An HMAC-Based One-Time Password Algorithm (HOTP) Implementation.
  *
@@ -44,6 +46,11 @@ package ejisan.kuro.otp
  * }}}
  *
  * @see [[https://tools.ietf.org/html/rfc4226 RFC 4226]]
+ *
+ * @note
+ * This class uses default Mac provider as `SunJCE`,
+ * and this can be changed by configuring the key `kuro.hmac.provider`
+ * in reference.conf or application.conf.
  */
 trait HOTPSupport {
   /**
@@ -66,9 +73,16 @@ trait HOTPSupport {
     (truncatedHash % scala.math.pow(10, digits.toDouble)).toInt
   }
 
+  /** Configuration */
+  protected val config: Config = ConfigFactory.load()
+
   /**
    * Calculates a HMAC value.
-   * This method uses the SunJCE provider to provide the HMAC algorithm.
+   *
+   * @note
+   * This method uses default Mac provider as `SunJCE`,
+   * and this can be changed by configuring the key `kuro.hmac.provider`
+   * in reference.conf or application.conf.
    *
    * @see [[https://tools.ietf.org/html/rfc4226#section-5.3 Generating an HOTP Value]]
    *
@@ -78,7 +92,9 @@ trait HOTPSupport {
    * @return A HMAC value.
    */
   protected def hmac(algorithm: OTPAlgorithm, otpkey: OTPKey, input: Array[Byte]): Array[Byte] = {
-    val mac = javax.crypto.Mac.getInstance(algorithm.value, "SunJCE")
+    val mac = javax.crypto.Mac.getInstance(
+      algorithm.value,
+      Option(config.getString("kuro.hmac.provider")).getOrElse("SunJCE"))
     mac.init(otpkey.get)
     mac.doFinal(input)
   }

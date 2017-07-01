@@ -2,6 +2,7 @@ package ejisan.kuro.otp
 
 import java.util.{ Arrays, Base64 }
 import java.security.{ Key, SecureRandom }
+import com.typesafe.config.{ Config, ConfigFactory }
 import org.apache.commons.codec.binary.{ Base32, Hex }
 
 /**
@@ -126,6 +127,9 @@ class OTPKey private (key: Key) {
  * }}}
  */
 object OTPKey {
+  /** Configuration */
+  protected val config: Config = ConfigFactory.load()
+
   /**
    * Creates new [[OTPKey]] instance.
    *
@@ -207,60 +211,56 @@ object OTPKey {
   def fromBase32Hex(base32Hex: String, strict: Boolean = true): OTPKey =
     fromByteArray((new Base32(true)).decode(base32Hex), strict)
 
-  @inline
-  private def defaultPRNG: SecureRandom =
-    SecureRandom.getInstance("NativePRNGNonBlocking", "SUN")
-
   /**
    * Generates random [[OTPKey]] instance.
    *
+   * @note
+   * This method uses default generation provider as `SunJCE`,
+   * and this can be changed by configuring the key `kuro.keyGenerator.provider`
+   * in reference.conf or application.conf.
+   *
    * @param keyLength the key length
-   * @param algorithm the algorithm
+   * @param algorithm the flavor of key generation
    * @param prng the random number generator
    */
   def random(keyLength: Int, algorithm: OTPAlgorithm, strict: Boolean, prng: SecureRandom): OTPKey = {
-    val gen = javax.crypto.KeyGenerator.getInstance(algorithm.value)
+    val gen = javax.crypto.KeyGenerator.getInstance(
+      algorithm.value,
+      Option(config.getString("kuro.keyGenerator.provider")).getOrElse("SunJCE"))
     gen.init(keyLength, prng)
     apply(gen.generateKey, strict)
   }
 
-  /**
-   * Generates random [[OTPKey]] instance.
-   *
-   * @param keyLength the key length
-   * @param algorithm the algorithm
-   * @param strict
-   */
-  def random(keyLength: Int, algorithm: OTPAlgorithm, strict: Boolean = true): OTPKey =
-    random(keyLength, algorithm, strict, defaultPRNG)
+  @inline
+  private def defaultPRNG: SecureRandom = {
+    SecureRandom.getInstance(
+      Option(config.getString("kuro.random.algorithm")).getOrElse("NativePRNGNonBlocking"),
+      Option(config.getString("kuro.random.provider")).getOrElse("SUN"))
+  }
 
   /**
    * Generates random [[OTPKey]] instance with default key length.
    *
-   * @param algorithm the algorithm
-   * @param prng the random number generator
-   */
-  def random(algorithm: OTPAlgorithm, prng: SecureRandom): OTPKey =
-    random(algorithm.defaultKeyLength, algorithm, false, prng)
-
-  /**
-   * Generates random [[OTPKey]] instance with default key length.
+   * @note
+   * This method uses default algorithm as `NativePRNGNonBlocking` from `Sun` provider,
+   * and this can be changed by configuring the key `kuro.random.algorithm` and
+   * `kuro.random.provider` in reference.conf or application.conf.
+   *
+   * @param algorithm the flavor of key generation
    */
   def random(algorithm: OTPAlgorithm): OTPKey =
-    random(algorithm, defaultPRNG)
+    random(algorithm.defaultKeyLength, algorithm, true, defaultPRNG)
 
   /**
    * Generates random [[OTPKey]] instance with stronger key length.
    *
-   * @param algorithm the algorithm
-   * @param prng the random number generator
-   */
-  def randomStrong(algorithm: OTPAlgorithm, prng: SecureRandom): OTPKey =
-    random(algorithm.strongKeyLength, algorithm, false, prng)
-
-  /**
-   * Generates random [[OTPKey]] instance with stronger key length.
+   * @note
+   * This method uses default algorithm as `NativePRNGNonBlocking` from `Sun` provider,
+   * and this can be changed by configuring the key `kuro.random.algorithm` and
+   * `kuro.random.provider` in reference.conf or application.conf.
+   *
+   * @param algorithm the flavor of key generation
    */
   def randomStrong(algorithm: OTPAlgorithm): OTPKey =
-    randomStrong(algorithm, defaultPRNG)
+    random(algorithm.strongKeyLength, algorithm, true, defaultPRNG)
 }
